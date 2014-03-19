@@ -52,13 +52,16 @@ You may have accidentally deactivated your myRealPage IDX Listings plugin. Pleas
 == Changelog ==
 
 = 0.7.2 =
-* Fixed an issue that cuase the title tag to revert to the Wordpress default when the listing custom URLs were activ.
+* Fixed an issue that cuase the title tag to revert to the Wordpress default when the listing custom URLs were active.
 
 = 0.7.0 =
 * Fixed a bug to allow the shortcode to work on a home page template.
 
 
 == Upgrade Notice ==
+
+= 0.7.2 =
+* Fixed an issue that cuase the title tag to revert to the Wordpress default when the listing custom URLs were active.
 
 = 0.7.0 =
 This update will allow you to use the shortcode on a home page.
