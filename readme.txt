@@ -3,7 +3,7 @@ Contributors: myRealPage
 Tags: mrp, idx, myRealPage, listings, real estate, crea, ddf, reciprocity, vow, realtor, treb, 
 Requires at least: 3.0
 Tested up to: 3.8.1
-Stable tag: 0.7.0
+Stable tag: 0.7.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,6 +51,9 @@ You may have accidentally deactivated your myRealPage IDX Listings plugin. Pleas
 
 == Changelog ==
 
+= 0.7.2 =
+* Fixed an issue that cuase the title tag to revert to the Wordpress default when the listing custom URLs were activ.
+
 = 0.7.0 =
 * Fixed a bug to allow the shortcode to work on a home page template.
 
@@ -70,7 +73,7 @@ In order to sign up for [myRealPage](http://myrealpage.com/ "Realtor Websites - 
 To view the real estate boards myRealPage has a listings feed in, please view our [Supported Boards](http://training.myrealpage.com/listing-importing-systems-supported-real-estate-boards "Listing Importing Systems & Supported Real Estate Boards | myRealPage Learning Center")
 
 
-== Arbitrary section ==
+== Please Note ==
 
 * Support will only be provided for clients of myRealPage with a Wordpress Plugin Subscription.
 
