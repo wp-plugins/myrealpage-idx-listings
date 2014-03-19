@@ -1,29 +1,13 @@
 <?php
 
-/*
+/**
  * Plugin Name: myRealPage IDX Listings
- * Plugin URI: http://training.myrealpage.com/wordpress-faq
- * Description: Embeds myRealPage IDX and Listings solution into WordPress. Uses shortcodes. Create a post or page and use integrated shortcode   	 button to launch myRealPage Listings Shortcode Wizard and generate a shortcode based on your choice of listing content, as well as functional and visual preferences.
- * Version: 0.7.0
+ * Description: Embeds myRealPage IDX and Listings solution into WordPress. Uses shortcodes. Create a post or page and use integrated shortcode button to launch myRealPage Listings Shortcode Wizard and generate a shortcode based on your choice of listing content, as well as functional and visual preferences.
+ * Version: 0.6.8
  * Author: myRealPage (support@myrealpage.com)
  * Author URI: http://myrealpage.com
- * License: GPL2
-*/
-/*  Copyright 2014  myRealPage  (email : support@myrealpage.com)
+**/
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as 
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
 require_once('InlineClient.php');
 
 if (!class_exists('MRPListing'))
@@ -319,7 +303,7 @@ if (!class_exists('MRPListing'))
     private function is_replaceable_title($uri)
     {
       $ret = false;
-      if (preg_match('@.*/(details\-|photos\-|videos\-|map\-|walkscore\-|'.
+      if (preg_match('@.*/(listing\..+|details\-|photos\-|videos\-|map\-|walkscore\-|'.
                            'print\-|ListingPrint\.form|ListingWalkScore\.form|'.
                            'ListingVideos\.form|ListingPhotos\.form|'.
                            'ListingDetails\.form|ListingGoogleMap\.form|'.
