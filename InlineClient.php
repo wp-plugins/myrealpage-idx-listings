@@ -26,15 +26,15 @@ class InlineClient
   $cache_timeout=604800, // One week, in seconds.
   $cache_dir='',
   $google_map_api_key='';
-  
+
   protected $direct_proxy_host = 'http://listings.myrealpage.com';
   protected $base_mrp_url = 'http://listings.myrealpage.com/wps/';
   //protected $direct_proxy_host = 'http://192.168.100.51:8080';
   //protected $base_mrp_url = 'http://192.168.100.51:8080/wps/';
-  
+
   public $mrp_headers = array('MrpStripPowered: false',
                               'MrpInlinePort: 80');
-  
+
   public function __construct($context='', $listing_def='', $init_attr='',
                               $perm_attr='', $account_id='', $page_name='',
                               $extension='', $details_def='', $details_photos_def='',
@@ -69,23 +69,23 @@ class InlineClient
         $this->extension = 'BROKEN';
       }
     }
-    
+
     // Any query strings? Attach.
     if (isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] != '')
     {
       $this->extension .= '?' . $_SERVER['QUERY_STRING'];
     }
-    
+
     if ($this->listing_def != '')
     {
       $this->mrp_headers[] = 'Listing-Definition: ' . $this->listing_def;
     }
-    
+
     if ($this->perm_attr != '')
     {
       $this->mrp_headers[] = 'Listing-ViewAttrs: ' . $this->perm_attr;
     }
-    
+
     if ($this->page_name != '')
     {
       // Check special case for evow-[NUMBER]/l/...
@@ -103,45 +103,62 @@ class InlineClient
     {
       $this->mrp_headers[] = 'MrpInlineRoot: ' . self::$uri_segment;
     }
-    
+
     // Addition from Bill - include the GoogleMapServerName header.
     $this->mrp_headers[] = 'GoogleMapServerName: ' . $_SERVER['HTTP_HOST'];
-    
+
     // Additional from Bill - include an X WordPress header.
     $this->mrp_headers[] = 'X-WordPress-Site: ' . $_SERVER['HTTP_HOST'];
     $this->mrp_headers[] = 'X-WordPress-Referer: ' . $_SERVER['HTTP_REFERER'];
     $this->mrp_headers[] = 'X-WordPress-Theme: ' . get_template();
- 
+    $this->mrp_headers[] = 'X-WordPress-Canonical-Capable: true';
+
     // Add cookies if present.
     $cookie_header = $this->get_cookie_header();
     if ($cookie_header != '')
     {
       $this->mrp_headers []= $cookie_header;
     }
-      
-    //$this->cache_dir = dirname(__FILE__) . '/cache';
+
     $this->cache_dir = realpath($_ENV["TMP"]) . "/mrpIdxCache";
     if (!file_exists($this->cache_dir))
     {
-      mkdir($this->cache_dir, 0777, true);
+		if( is_writable( dirname( $this->cache_dir ) ) ) {
+	      mkdir($this->cache_dir, 0777, true);
+		}
     }
+
+    if (!file_exists($this->cache_dir))
+	 {
+			$this->cache_dir = dirname(__FILE__) . '/cache';
+	 }
+
+    if (!file_exists($this->cache_dir))
+	 {
+			if( is_writable( dirname( $this->cache_dir ) ) ) {
+				mkdir($this->cache_dir, 0777, true);	
+			}
+	  }
   }
-  
+
+
+
+
   public function set_debug($debug)
   {
     $this->debug = $debug;
   }
-  
+
   public function set_cache_timeout($cache_timeout)
   {
     $this->cache_timeout = $cache_timeout;
   }
-  
+
   public function set_request_logging($request_logging)
   {
     $this->request_logging = $request_logging;
   }
-  
+
   public function set_google_map_api_key($google_map_api_key)
   {
     $this->google_map_api_key = $google_map_api_key;
@@ -150,23 +167,23 @@ class InlineClient
       $this->mrp_headers[] = 'X-Mrp-GoogleMapKey: ' . $this->google_map_api_key;
     }
   }
-  
+
   /**
    * Gets inline content based on page definition if we're not hitting a /wps/
    * page. If we are, proxy this directly (don't use the page definition) to MRP
    * and return the results.
    **/
-  
+
   public function getInlineContent($page_name)
   {
     $request_uri = $_SERVER['REQUEST_URI'];
- 
+
     // Generate the URL based on page definition.
     $mrp_url = $this->generateUrl($page_name);
- 
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST')
     {
-      
+
       //$custom_content = $this->getURIContents($mrp_url, $this->mrp_headers, $_POST);
       // ewiltshi: Read raw input from stdin and use that as POST params.
       $post_params = file_get_contents("php://input");
@@ -181,12 +198,12 @@ class InlineClient
     $content = str_replace('"/wps-listings.css', '"http://listings.myrealpage.com/wps-listings.css', $content);
     return array('content' => $content, 'status' => $custom_content['status'], 'cookies' => $custom_content['cookies'], 'http_headers' => $custom_content['http_headers']);
   }
- 
+
   /**
    * Parses the inline content, extracting <head>, <body> tags. Also returns
    * HTTP redirects if they are required.
    **/
-  
+
   public function getParsedInlineContent($page_name)
   {
     $content = array();
@@ -210,7 +227,7 @@ class InlineClient
         $content = $this->parseInlineContent($html_content);
         $content['cookies'] = $inline['cookies'];
       }
-      
+
       if ($status == 404)
       {
         if ($content['title'] == '')
@@ -228,18 +245,18 @@ class InlineClient
         // No location header, or blank location
         return $content;
       }
-      
+
       // Redirect after rooting the returned URL to the calling site.
       $location = $headers['Location'];
       $location = preg_replace('@http://(.+?)/(.*)@', 'http://'.$_SERVER['HTTP_HOST'].'/$2', $location);
       return array('redirect' => $location, 'status' => $status, 'cookies' => $inline['cookies']);
     }
-    
+
   }
- 
+
   public function parseInlineContent($content)
   {
-	$supported_themes = array( 'twentyten' => 'twentyten.css', 'thesis_18' => 'thesis.css' );    
+	$supported_themes = array( 'twentyten' => 'twentyten.css', 'thesis_18' => 'thesis.css' );
 
     $head = $this->getStringBetween($content, '</TITLE>', '</head>');
 
@@ -250,10 +267,10 @@ class InlineClient
     if( $adapt_css ) {
 		$head = "<!-- start of custom myrealpage theme support css -->\n" .
 			"<link type='text/css' rel='stylesheet' href='http://listings.myrealpage.com/wps/css/wp-themes/" . $adapt_css . "'/>\n" .
-			"<!-- end of custom myrealpage theme support css -->\n" . 
+			"<!-- end of custom myrealpage theme support css -->\n" .
 			$head;
     }
-    
+
     $body = $this->getStringBetween($content, '<body>', '</body>');
     $title = $this->getStringBetween($content, '<TITLE>', '</TITLE>');
     $meta_description = $this->getStringBetween($content,  "<META name=\"description\" content=\"", "\">");
@@ -261,7 +278,7 @@ class InlineClient
     {
       $title = html_entity_decode($title);
     }
-    
+
     if ($meta_description != '')
     {
       $meta_description = html_entity_decode($meta_description);
@@ -271,25 +288,25 @@ class InlineClient
                  'title' => $title,
                  'meta_description' => $meta_description);
   }
- 
+
   /**
    * Gets string between two other strings. Code taken from:
    * http://www.justin-cook.com/wp/2006/03/31/php-parse-a-string-between-two-strings/
    *
    **/
-  public function getStringBetween($string, $start, $end){ 
-    $string = " ".$string; 
-    $ini = strpos($string,$start); 
-    if ($ini == 0) return ""; 
-    $ini += strlen($start); 
-    $len = strpos($string,$end,$ini) - $ini; 
-    return substr($string,$ini,$len); 
-} 
- 
+  public function getStringBetween($string, $start, $end){
+    $string = " ".$string;
+    $ini = strpos($string,$start);
+    if ($ini == 0) return "";
+    $ini += strlen($start);
+    $len = strpos($string,$end,$ini) - $ini;
+    return substr($string,$ini,$len);
+}
+
   /**
    * Generates MRP URL based on parameters.
    **/
-  
+
   public function generateUrl($page_name)
   {
     $url = $this->base_mrp_url;
@@ -298,7 +315,7 @@ class InlineClient
     $url .= '/';
 
     header("X-Extension: " . $this->extension);
-    
+
     if( $this->extension && $this->extension != "/evow") {
       $url .= $this->extension;
     }
@@ -307,7 +324,7 @@ class InlineClient
     }
     elseif ($this->details_def)
     {
-      $url .= 'details-' . $this->details_def;     
+      $url .= 'details-' . $this->details_def;
     }
     elseif ($this->details_photos_def)
     {
@@ -333,7 +350,7 @@ class InlineClient
         $url .= 'Search.form?_sf_=' . $this->searchform_def;
       }
     }
-    
+
     // Add initial attributes if we don't already have a query string
     if ($this->init_attr != '' && stripos($url, '?') == false)
     {
@@ -348,7 +365,7 @@ class InlineClient
   public function do_direct_proxy_with_cache($uri, $post_params="")
   {
     $ret = array();
-    
+
     // Is this a cacheable file, and NOT a POST request?
     if ($this->can_cache($uri) && count($post_params) == 0)
     {
@@ -392,7 +409,7 @@ class InlineClient
       // No caching allowed, so proxy normally.
       $ret = $this->do_direct_proxy($uri, $post_params);
     }
-    
+
     return $ret;
   }
 
@@ -402,31 +419,31 @@ class InlineClient
 
   public function do_direct_proxy($uri, $post_params="")
   {
-    
+
     $headers = array( 'GoogleMapServerName: ' . $_SERVER['HTTP_HOST'],
                       'X-WordPress-Site: ' . $_SERVER['HTTP_HOST'],
                       'X-WordPress-Referer: ' . $_SERVER['HTTP_REFERER']);
     if ($this->page_name != '')
     {
-      $headers []= 'MrpInlineRoot: ' . '/' . $this->page_name . self::$uri_segment; 
+      $headers []= 'MrpInlineRoot: ' . '/' . $this->page_name . self::$uri_segment;
     }
     else
     {
       $headers []= 'MrpInlineRoot: ' . self::$uri_segment;
     }
-    
+
     if ($this->google_map_api_key != '')
     {
       $headers []= 'X-Mrp-GoogleMapKey: ' . $this->google_map_api_key;
     }
-    
+
     $cookie_header = $this->get_cookie_header();
     if ($cookie_header != '')
     {
       $headers []= $cookie_header;
     }
-    $c = $this->getURIContents($this->direct_proxy_host . $uri, 
-			       $headers, 
+    $c = $this->getURIContents($this->direct_proxy_host . $uri,
+			       $headers,
 			       $post_params);
     if ($this->request_logging)
     {
@@ -440,7 +457,7 @@ class InlineClient
    * Static function which will generate the script tags for embedded forms.
    **/
 
-  public static function getEmbeddedFormJS($account_id, $context, $perm_attr, 
+  public static function getEmbeddedFormJS($account_id, $context, $perm_attr,
 					   $init_attr, $searchform_def) {
     $url = "http://idx.myrealpage.com/wps/rest/$account_id/l/idx2/$context/";
     // Include perm_attr if defined. Otherwise we just use noframe~true.
@@ -467,11 +484,11 @@ class InlineClient
    * If $post_params has data, we assume the request is a post and include those
    * parameters.
    **/
-  
+
   private function getURIContents($uri, $headers=array(), $post_params="")
   {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $uri); 
+    curl_setopt($ch, CURLOPT_URL, $uri);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     // Ensure we send along client side UA string in case mobile conversion
@@ -479,14 +496,14 @@ class InlineClient
     curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
-    
+
     if (count($headers) > 0)
     {
       // bill: disable expect header: causes confusion on server
-      $headers[] = "Expect:"; 
+      $headers[] = "Expect:";
       curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     }
-    
+
     //if (count($post_params) > 0)
     if ($post_params != "")
     {
@@ -534,12 +551,12 @@ class InlineClient
     }
     return $ret;
   }
-  
+
   /**
    * Extracts all Set-Cookie: headers from the given array of HTTP headers
    * for replay, emulating a server.
    **/
-  
+
   private function get_set_cookie_headers($headers)
   {
     $cookie_headers = array();
@@ -556,11 +573,11 @@ class InlineClient
     }
     return $cookie_headers;
   }
-  
+
   /**
    * Returns all current cookies as an HTTP header, emulating a browser.
    **/
-  
+
   private function get_cookie_header()
   {
     $cookie = '';
@@ -586,18 +603,18 @@ class InlineClient
     }
     return $ret;
   }
-  
+
   private function log_request($uri, $headers, $post_params,
                                $response_info, $response_headers, $response_content)
   {
     list($usec, $sec) = explode(' ', microtime());
     $file = $sec . intval((1000*$usec));
-    //$file = dirname(__FILE__) .'/logs/'.$file.'.log';    
+    //$file = dirname(__FILE__) .'/logs/'.$file.'.log';
     $dir = realpath($_ENV["TMP"]) . '/mrpIdxLogs/';
     if (!file_exists($dir)) {
       mkdir($dir, 0777, true);
     }
-    $file = $dir . $file.'.log';    
+    $file = $dir . $file.'.log';
     $txt = date(DATE_ATOM)."\r\n\r\n".
       'REQUEST URI: ' . $uri ."\r\n\r\n".
       'REQUEST HEADERS: ' . "\r\n".print_r($headers, true) . "\r\n\r\n".
@@ -605,16 +622,16 @@ class InlineClient
       'RESPONSE INFO: ' . "\r\n" . print_r($response_info, true). "\r\n\r\n".
       'RESPONSE HEADERS: ' . "\r\n" . print_r($response_headers, true) . "\r\n\r\n".
       'RESPONSE CONTENT: ' . "\r\n" . $response_content."\r\n\r\n\r\n";
-                          
+
     $open_file = fopen($file,'a');
     fwrite($open_file, $txt);
     fclose($open_file);
   }
-  
+
   /**
    * Is this a URI that is on our list of cacheable ones?
    **/
-  
+
   private function can_cache($uri)
   {
     $ret = false;
@@ -624,19 +641,19 @@ class InlineClient
     {
       $ret = true;
     }
-    
+
     return $ret;
   }
-  
+
   /**
    * Determines whether we can use the cached version of a file (does it exist?
    * is it younger than the cache timeout? is it writable?)
    **/
-    
+
   private function should_use_cache($cache_file)
   {
     $ret = false;
-    
+
     if ($this->cache_timeout > 0 &&
         file_exists($cache_file) &&
         filemtime($cache_file) > (time() - $this->cache_timeout) &&
@@ -646,11 +663,11 @@ class InlineClient
     }
     return $ret;
   }
-  
+
   /**
    * Generates the filename on disk from a given URI.
    **/
-  
+
   private function get_cache_location($uri)
   {
     list($directory, $filename) = explode('?', $uri, 2);
@@ -670,13 +687,13 @@ class InlineClient
     }
     return $this->cache_dir . $directory . $filename;
   }
-  
+
   /**
    * PHP doesn't have a great way of determining MIME type easily, that doesn't
    * involve 3rd party extensions. Since we're caching a known set of file types,
    * this isn't so bad.
    **/
-  
+
   private function get_mime_type($uri)
   {
     $ret = 'text/html';
@@ -715,12 +732,12 @@ class InlineClient
     }
     return $ret;
   }
-  
+
   /**
    * Caches content in the specified directory by creating the directory if required,
    * and writing the file.
    **/
-  
+
   private function cache_contents($cache_location, $contents)
   {
     $directory = substr($cache_location, 0, strrpos($cache_location, '/'));
