@@ -459,7 +459,7 @@ class InlineClient
 
   public static function getEmbeddedFormJS($account_id, $context, $perm_attr,
 					   $init_attr, $searchform_def) {
-    $url = "http://idx.myrealpage.com/wps/rest/$account_id/l/idx2/$context/";
+    $url = "//idx.myrealpage.com/wps/rest/$account_id/l/idx2/$context/";
     // Include perm_attr if defined. Otherwise we just use noframe~true.
     if ($perm_attr != "") {
       $url .= $perm_attr . ",noframe~true/";
