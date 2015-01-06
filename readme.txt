@@ -94,3 +94,20 @@ To view the real estate boards myRealPage has a listings feed in, please view ou
 * Support will only be provided for clients of myRealPage with a Wordpress Plugin Subscription.
 
 * For more information on myRealPage, please visit us [myRealPage](http://myrealpage.com/ "Realtor Websites - Real Estate Websites for Agents | myRealPage") .
+
+
+== Known Server Conflicts ==
+
+* Our plugin has been known to not function 100% when hosted on the [WP-Engine](http://wpengine.com/) Server.
+
+
+== Known Plugin Conflicts ==
+
+1. [SEO Friendly Image](http://wordpress.org/plugins/seo-image)
+
+1. [Redirection](http://wordpress.org/plugins/redirection)
+*Other redirection tools may also cause the myRealPage plugin to stop working*
+
+1. [WordPress Social Stream](http://codecanyon.net/item/wordpress-social-stream/2201708)
+
+1. [WP Maintenance Mode](http://wordpress.org/plugins/wp-maintenance-mode)
