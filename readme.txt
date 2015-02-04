@@ -3,7 +3,7 @@ Contributors: myRealPage
 Tags: mrp, idx, myRealPage, listings, real estate, crea, ddf, reciprocity, vow, realtor, treb, 
 Requires at least: 3.0
 Tested up to: 4.1
-Stable tag: 0.7.5
+Stable tag: 0.7.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,9 @@ You may have accidentally deactivated your myRealPage IDX Listings plugin. Pleas
 
 
 == Changelog ==
+
+= 0.7.6 =
+*Eliminated errors in certain WordPress deployments which had non-writable temporary directories
 
 = 0.7.5 =
 * A few enhancements to allow better integration with SSL (secure socket layer)

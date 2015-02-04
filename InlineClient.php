@@ -120,6 +120,7 @@ class InlineClient
       $this->mrp_headers []= $cookie_header;
     }
 
+	/*
     $this->cache_dir = realpath($_ENV["TMP"]) . "/mrpIdxCache";
     if (!file_exists($this->cache_dir))
     {
@@ -132,6 +133,8 @@ class InlineClient
 	 {
 			$this->cache_dir = dirname(__FILE__) . '/cache';
 	 }
+	 */
+	$this->cache_dir = dirname(__FILE__) . '/cache';
 
     if (!file_exists($this->cache_dir))
 	 {
